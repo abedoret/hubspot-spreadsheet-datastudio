@@ -20,8 +20,8 @@
 /**
  * Fill in the following variables
  */
-var CLIENT_ID = '...';
-var CLIENT_SECRET = '...';
+var CLIENT_ID = '';
+var CLIENT_SECRET = '';
 var SCOPE = 'contacts';
 var AUTH_URL = "https://app.hubspot.com/oauth/authorize";
 var TOKEN_URL = "https://api.hubapi.com/oauth/v1/token";
@@ -130,19 +130,26 @@ function getStages() {
   var headers = {headers: {'Authorization': 'Bearer ' + service.getAccessToken()}};
   
   // API request
-  var url = API_URL + "/deals/v1/pipelines/default"; // :pipelineId: = default 
+  var pipeline_id = "default"; // Enter your pipeline id here.
+  var url = API_URL + "/crm-pipelines/v1/pipelines/deals";
   var response = UrlFetchApp.fetch(url, headers);
   var result = JSON.parse(response.getContentText());
-  
-  // Let's sort the stages by displayOrder
-  result.stages.sort(function(a,b) {
-    return a.displayOrder-b.displayOrder;
-  });
-  
-  // Let's put all the used stages (id & label) in an array
   var stages = Array();
-  result.stages.forEach(function(stage) {
-    stages.push([stage.stageId,stage.label]);  
+  
+  // Looping through the different pipelines you might have in Hubspot
+  result.results.forEach(function(item) {
+    if (item.pipelineId == pipeline_id) {
+      var result_stages = item.stages;
+      // Let's sort the stages by displayOrder
+      result_stages.sort(function(a,b) {
+        return a.displayOrder-b.displayOrder;
+      });
+  
+      // Let's put all the used stages (id & label) in an array
+      result_stages.forEach(function(stage) {
+        stages.push([stage.stageId,stage.label]);  
+      });
+    }
   });
   
   return stages;
@@ -305,4 +312,3 @@ function logSources() {
   var setRange = sheet.getRange(lastRow+1,1,1,row.length);
   setRange.setValues(matrix);
 }
-
